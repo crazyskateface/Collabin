@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collaborate</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const socket = io();
+      const codeArea = document.getElementById('codeArea');
+      const executeButton = document.getElementById('executeButton');
+      const outputArea = document.getElementById('outputArea');
+      const languageSelect = document.getElementById('languageSelect');
+
+      codeArea.addEventListener('input', () => {
+        console.log('input event');
+        socket.emit('codeChange', codeArea.value);
+      });
+
+      socket.on('codeChange', (data) => {
+        codeArea.value = data;
+      });
+
+      executeButton.addEventListener('click', () => {
+        fetch('/execute', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ code: codeArea.value, language: languageSelect.value })
+        })
+        .then(response => response.text())
+        .then(output => {
+          outputArea.textContent = output;
+        })
+        .catch(error => {
+          outputArea.textContent = 'Error executing code';
+        });
+      });
+    });
+  </script>
+</head>
+<body>
+  <h1>Collaborate</h1>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+    <a href="/contact">Contact</a>
+    <a href="/logout">Logout</a>
+  </nav>
+  <main>
+
+
+    <br />
+    <h4>Code Editor</h4>
+    <br />
+    <label for="languageSelect">Select Language:</label>
+    <select id="languageSelect">
+      <option value="node">JavaScript</option>
+      <option value="python">Python</option>
+      <option value="java">Java</option>
+      <option value="c">C</option>
+      <option value="cpp">C++</option>
+    </select>
+
+    <textarea id="codeArea" rows="20" cols="80"></textarea>
+    <button id="executeButton">Run</button>
+    
+    <h4> Output</h4>
+    <pre id="outputArea"></pre>
+
+  </main>
+</body>
+</html>
